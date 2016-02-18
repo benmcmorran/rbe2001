@@ -14,12 +14,17 @@ class Bluetoothh
 		void sentLowAlert();
 		void sentHighAlert();
 		void unpack();
+		void checkstatus();
 		void sentRobotStatus(int move,int grip,int operation);
+		
+		//field
+		int unpacked[9];
+		byte decode_message[3];
 
 	private:
 		ReactorProtocol pcol; 
 		BluetoothMaster btmaster;
-		char unpacked[10]; 	//store unpacked message
+		//store unpacked message
 };
 
 #endif

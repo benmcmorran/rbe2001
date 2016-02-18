@@ -1,6 +1,7 @@
 #include "Bluetoothh.h"
 #include <BluetoothMaster.h>
 #include <ReactorProtocol.h>
+#include <Arduino.h>
 
 Bluetoothh::Bluetoothh() : pcol(byte(MY_TEAM)) //<--!!!the testboard id number
 {
@@ -8,6 +9,8 @@ Bluetoothh::Bluetoothh() : pcol(byte(MY_TEAM)) //<--!!!the testboard id number
   	Serial.begin(115200);
   	// the slave bluetooth module is also configured to 115200 baud
   	Serial1.begin(115200);
+  	int unpacked[9] = {0,0,0,0,0,0,0,0,0};
+	byte decode_message[3]={0x00,0x00,0x00};
 }
 
 void Bluetoothh::sentHB(){
@@ -16,7 +19,7 @@ void Bluetoothh::sentHB(){
 	int size;
 
 	pcol.setDst(0x00);		
-	size = pcol.createPkt(0x03, data, pakage);
+	size = pcol.createPkt(0x07, data, pakage);
     btmaster.sendPkt(pakage, size);   
 }
 
@@ -46,11 +49,10 @@ void Bluetoothh::sentHighAlert(){
 }
 
 
-char* Bluetoothh::checkstatue(){
+void Bluetoothh::checkstatus(){
 	byte data[3];
 	byte pakage[10];
 	byte type;
-	byte decode_message[]={0x00,0x00,0x00,0x00};
 	int size;
 
 	if(btmaster.readPacket(pakage)){
@@ -67,7 +69,7 @@ char* Bluetoothh::checkstatue(){
 						decode_message[2] = 0x01;
 						break;
 					case 0x05: //resume movement
-						decode_message[3] = 0x01;
+						decode_message[2] = 0x00;
 						break;
 					default:
 						break;
@@ -76,25 +78,25 @@ char* Bluetoothh::checkstatue(){
 		}	
 	}
 
-	unpack(decode_message[]);
-	return unpacked;
-}
-
-void Bluetoothh::unpack(byte decode_message[]){		
-		unpacked[0] = (char) decode_message[0] & 0x01;
-		unpacked[1] = (char) decode_message[0] & 0x02 >>1;
-		unpacked[2] = (char) decode_message[0] & 0x04 >>2;
-		unpacked[3] = (char) decode_message[0] & 0x08 >>3;
-		unpacked[4] = (char) decode_message[1] & 0x01;
-		unpacked[5] = (char) decode_message[1] & 0x02 >>1;
-		unpacked[6] = (char) decode_message[1] & 0x04 >>2;
-		unpacked[7] = (char) decode_message[1] & 0x08 >>3;
-		unpacked[8] = (char) decode_message[2];
-		unpacked[9] = (char) decode_message[3];
+	unpack();
 }
 
 
 
+void Bluetoothh::unpack(){		
+		unpacked[0] = (int) (decode_message[0] & (byte) 0x01);
+		unpacked[1] = (int) (decode_message[0] & (byte) 0x02) >>1;
+		unpacked[2] = (int) (decode_message[0] & (byte) 0x04) >>2;
+		unpacked[3] = (int) (decode_message[0] & (byte) 0x08) >>3;
+		unpacked[4] = (int) (decode_message[1] & 0x01);
+		unpacked[5] = (int) (decode_message[1] & 0x02) >>1;
+		unpacked[6] = (int) (decode_message[1] & 0x04) >>2;
+		unpacked[7] = (int) (decode_message[1] & 0x08) >>3;
+		unpacked[8] = (int) decode_message[2];
+}
+
+
+//basically useless fuction, for debug purpose(maybe??)
 void Bluetoothh::sentRobotStatus(int move, int grip, int operation){
 	byte data[3];
 	byte pakage[10];
