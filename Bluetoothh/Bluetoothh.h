@@ -14,7 +14,7 @@ class Bluetoothh
 		void sentLowAlert();
 		void sentHighAlert();
 		void unpack();
-		void Bluetoothh::sentRobotStatus(int move,int grip,int operation);
+		void sentRobotStatus(int move,int grip,int operation);
 
 	private:
 		ReactorProtocol pcol; 
