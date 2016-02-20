@@ -25,8 +25,8 @@ Motor::Motor(int encoderPin1, int encoderPin2) :
 
   pid.SetOutputLimits(-80, 80);
   pid.SetSampleTime(50); // 50 ms = 20 Hz
-  pid.SetMode(AUTOMATIC);
 
+  motorIndex = globalMotorCount;
   if (globalMotorCount < MOTOR_MAX_MOTORS) {
     globalMotors[globalMotorCount] = this;
     globalMotorCount++;
@@ -38,17 +38,39 @@ void Motor::attach(int motorPin) {
 }
 
 void Motor::updateEncoder() {
-  ticksSampled = encoder.read();
-  encoder.write(0);
+  if (isSpeedMode) {
+    ticksSampled = encoder.read();
+    encoder.write(0);
+  }
 }
 
 void Motor::update() {
-  input = (double)ticksSampled * 20 / 360; // sampling at 20 Hz, 360 quad ticks per rev
-  pid.Compute();
-  motor.write(90 - output);
+  if (isSpeedMode) {
+    input = (double)ticksSampled * 20 / 360; // sampling at 20 Hz, 360 quad ticks per rev
+    pid.Compute();
+    motor.write(90 - output);
+  } else {
+    if (abs(encoder.read()) >= abs(targetTicks))
+      motor.write(90);
+    else
+      motor.write(targetTicks > 0 ? 80 : 105);
+  }
 }
 
 void Motor::setSpeed(double speed) {
   setpoint = speed;
+  pid.SetMode(AUTOMATIC);
+  isSpeedMode = true;
+}
+
+void Motor::setRotations(double rotations) {
+  isSpeedMode = false;
+  pid.SetMode(MANUAL);
+  encoder.write(0);
+  targetTicks = (int)(rotations * 360);
+}
+
+bool Motor::isAtTarget() {
+  return abs(encoder.read()) >= abs(targetTicks);
 }
 

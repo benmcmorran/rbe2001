@@ -14,13 +14,20 @@ public:
   void updateEncoder();
   void update();
   void setSpeed(double speed);
-  double input, output, setpoint;
+  void setRotations(double rotations);
+  bool isAtTarget();
 
 private:
+  int motorIndex;
+  bool isSpeedMode = true;
+  
+  double input, output, setpoint;
   signed char ticksSampled;
   Encoder encoder;
   PID pid;
   Servo motor;
+
+  int targetTicks;
 };
 
 #endif
