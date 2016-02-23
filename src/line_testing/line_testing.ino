@@ -1,9 +1,11 @@
 #include "LineSensor.h"
+#include <Encoder.h>
 #include <Servo.h>
 #include <PID_v1.h>
 #include <TimerOne.h>
 
 #define LED_PIN 22
+#define FRONT_BUMPER_PIN 25
 
 const int lineSensorPins[] = { 5, 6, 7, 1, 0, 2, 3, 4 };
 LineSensor sensor(lineSensorPins);
@@ -17,21 +19,24 @@ Servo left, right;
 int leftSpeed, rightSpeed;
 
 double Setpoint, Input, Output;
-PID myPID(&Input, &Output, &Setpoint, 30, 0, 1, DIRECT);
+PID myPID(&Input, &Output, &Setpoint, 20, 0, 3, DIRECT);
+
+long intersectionExitTime;
 
 void setup() {
   Serial.begin(9600);
   left.attach(10);
   right.attach(11);
   pinMode(LED_PIN, OUTPUT);
+  pinMode(FRONT_BUMPER_PIN, INPUT_PULLUP);
 
   Input = 0;
   Setpoint = 0;
-  myPID.SetMode(AUTOMATIC);
-  myPID.SetOutputLimits(-255, 255); 
+  myPID.SetOutputLimits(-255, 255);
+
+  intersectionExitTime = millis() + 500;
 }
 
-int loopCount = 0;
 void loop() {
   digitalWrite(LED_PIN, isInIntersection);
   
@@ -43,25 +48,26 @@ void loop() {
   } else if (!isInIntersection && averageReading > positiveIntersectionThreshold) {
     isInIntersection = true;
     intersectionCount++;
+    intersectionExitTime = millis();
   }
 
-  /*if (intersectionCount == 4) {
+  if (/*intersectionCount >= 1*/digitalRead(FRONT_BUMPER_PIN) == LOW) {
     leftSpeed = 90;
     rightSpeed = 90;
-  } else*/ if (sensor.maxReading() > 200 && !isInIntersection) {
+  } else if (sensor.isLineDetected()/*sensor.maxReading() > 200 && !isInIntersection && millis() - intersectionExitTime > 500*/) {
     Input = sensor.averageLinePosition();
+    myPID.SetMode(AUTOMATIC);
     myPID.Compute();
-    leftSpeed = 85 + Output;
-    rightSpeed = 85 - Output;
+    leftSpeed = 80 + Output;
+    rightSpeed = 80 - Output;
+  } else {
+    leftSpeed = 80;
+    rightSpeed = 80;
+    myPID.SetMode(MANUAL);
   }
 
   safeMotorDrive(&left, leftSpeed);
   safeMotorDrive(&right, rightSpeed);
-
-  loopCount++;
-  if (loopCount == 10000) {
-    Serial.println(millis());
-  }
 }
 
 void safeMotorDrive(Servo *motor, int value) {

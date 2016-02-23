@@ -37,3 +37,16 @@ float LineSensor::averageLinePosition() {
 	return positionSum / readingSum;
 }
 
+bool LineSensor::isLineDetected() {
+  bool foundLine = false;
+  for (int i = 0; i < NUM_LINE_SENSORS; i++) {
+    if (readings[i] > 100) {
+      if (!foundLine) {
+        i++; // Skip the next reading
+        foundLine = true;
+      } else return false;
+    }
+  }
+  return foundLine;
+}
+

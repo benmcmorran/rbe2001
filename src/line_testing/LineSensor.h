@@ -9,6 +9,7 @@ public:
 	int maxReading();
   int averageReading();
 	float averageLinePosition();
+  bool isLineDetected();
 	void update();
 private:
 	int pins[8];

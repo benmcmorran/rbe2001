@@ -12,8 +12,10 @@ void setup() {
   Motor::initialize();
   left.attach(10);
   right.attach(11);
-  left.setRotations(0.72);
-  right.setRotations(-0.72);
+  /*left.setRotations(-0.72);
+  right.setRotations(0.72);*/
+  left.setSpeed(0.5);
+  right.setSpeed(0.5);
 }
 
 void loop() {
