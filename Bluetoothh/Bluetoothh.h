@@ -1,30 +1,32 @@
 #ifndef BLUETOOTHH_H
 #define BLUETOOTHH_H
 
-#define MY_TEAM 20
-
 #include <BluetoothMaster.h>
 #include <ReactorProtocol.h>
+#include <Arduino.h>
+#include <SimpleTimer.h>
 
 class Bluetoothh
 {
 	public:
-		Bluetoothh();
-		void sentHB();
-		void sentLowAlert();
-		void sentHighAlert();
+		Bluetoothh(int team);
+		void sendHB();
+		void sendLowAlert();
+		void sendHighAlert();
 		void unpack();
 		void checkstatus();
 		void sentRobotStatus(int move,int grip,int operation);
 		
 		//field
-		int unpacked[9];
-		byte decode_message[3];
+		bool unpacked[8];
+		byte message[3];
+		bool stopMoving;
+		bool isHB;
 
 	private:
 		ReactorProtocol pcol; 
 		BluetoothMaster btmaster;
-		//store unpacked message
+		SimpleTimer sptimer1;
 };
 
 #endif

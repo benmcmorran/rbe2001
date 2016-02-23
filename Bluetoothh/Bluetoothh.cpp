@@ -1,19 +1,21 @@
 #include "Bluetoothh.h"
-#include <BluetoothMaster.h>
-#include <ReactorProtocol.h>
-#include <Arduino.h>
 
-Bluetoothh::Bluetoothh() : pcol(byte(MY_TEAM)) //<--!!!the testboard id number
-{
-	// configure the console comm port to 115200 baud
-  	Serial.begin(115200);
-  	// the slave bluetooth module is also configured to 115200 baud
-  	Serial1.begin(115200);
-  	int unpacked[9] = {0,0,0,0,0,0,0,0,0};
-	byte decode_message[3]={0x00,0x00,0x00};
+
+void sendHB_ISR(){
+	isHB = true;
 }
 
-void Bluetoothh::sentHB(){
+Bluetoothh::Bluetoothh(int team) : pcol(byte(team))
+{
+	Serial.begin(115200); // configure the console comm port to 115200 baud
+  	Serial1.begin(115200);  // the slave bluetooth module is also configured to 115200 baud
+  	bool unpacked[8] = {false,false,false,false,false,false,false,false};
+	byte message[3]={0x00,0x00,0x00};
+
+	sptimer1.setInterval(1500,sendHB_ISR);//let's see
+}
+
+void Bluetoothh::sendHB(){
 	byte data[3];
 	byte pakage[10];
 	int size;
@@ -24,20 +26,19 @@ void Bluetoothh::sentHB(){
 }
 
 
-void Bluetoothh::sentLowAlert(){
+void Bluetoothh::sendLowAlert(){
 	byte data[3];
 	byte pakage[10];
 	int size;
 
-	data[0] = 0x2C;		
-	pcol.setDst(0x00);
+	data[0] = 0x2C; 
+	pcol.setDst(0x00); 
 	size = pcol.createPkt(0x03, data, pakage);
     btmaster.sendPkt(pakage, size); 
-
 }
 
 
-void Bluetoothh::sentHighAlert(){
+void Bluetoothh::sendHighAlert(){
 	byte data[3];
 	byte pakage[10];
 	int size;
@@ -57,19 +58,19 @@ void Bluetoothh::checkstatus(){
 
 	if(btmaster.readPacket(pakage)){
 		if (pcol.getData(pakage, data, type)){
-			if(pakage[4]== 0x00||pakage[4]==(byte)MY_TEAM){
+			if(pakage[4]== 0x00||pakage[4]==((byte)team)){
 				switch(type){
 					case 0x01: //storage availability
-						decode_message[0] = data[0];
+						message[0] = data[0];
 						break;
 					case 0X02: //supply
-						decode_message[1] = data[0];
+						message[1] = data[0];
 						break;
 					case 0x04: //stop movement
-						decode_message[2] = 0x01;
+						message[2] = 0x01;
 						break;
 					case 0x05: //resume movement
-						decode_message[2] = 0x00;
+						message[2] = 0x00;
 						break;
 					default:
 						break;
@@ -84,15 +85,15 @@ void Bluetoothh::checkstatus(){
 
 
 void Bluetoothh::unpack(){		
-		unpacked[0] = (int) (decode_message[0] & (byte) 0x01);
-		unpacked[1] = (int) (decode_message[0] & (byte) 0x02) >>1;
-		unpacked[2] = (int) (decode_message[0] & (byte) 0x04) >>2;
-		unpacked[3] = (int) (decode_message[0] & (byte) 0x08) >>3;
-		unpacked[4] = (int) (decode_message[1] & 0x01);
-		unpacked[5] = (int) (decode_message[1] & 0x02) >>1;
-		unpacked[6] = (int) (decode_message[1] & 0x04) >>2;
-		unpacked[7] = (int) (decode_message[1] & 0x08) >>3;
-		unpacked[8] = (int) decode_message[2];
+		unpacked[0] = (bool) (message[0] & (byte) 0x01);
+		unpacked[1] = (bool) (message[0] & (byte) 0x02) >>1;
+		unpacked[2] = (bool) (message[0] & (byte) 0x04) >>2;
+		unpacked[3] = (bool) (message[0] & (byte) 0x08) >>3;
+		unpacked[4] = (bool) (message[1] & 0x01);
+		unpacked[5] = (bool) (message[1] & 0x02) >>1;
+		unpacked[6] = (bool) (message[1] & 0x04) >>2;
+		unpacked[7] = (bool) (message[1] & 0x08) >>3;
+		stopMoving = (bool) message[2];
 }
 
 
