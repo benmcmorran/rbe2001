@@ -21,7 +21,10 @@ int leftSpeed, rightSpeed;
 double Setpoint, Input, Output;
 PID myPID(&Input, &Output, &Setpoint, 20, 0, 3, DIRECT);
 
-long intersectionExitTime;
+Encoder leftE(19, 20);
+Encoder rightE(18, 3);
+
+bool isTurning = false;
 
 void setup() {
   Serial.begin(9600);
@@ -33,8 +36,6 @@ void setup() {
   Input = 0;
   Setpoint = 0;
   myPID.SetOutputLimits(-255, 255);
-
-  intersectionExitTime = millis() + 500;
 }
 
 void loop() {
@@ -48,12 +49,19 @@ void loop() {
   } else if (!isInIntersection && averageReading > positiveIntersectionThreshold) {
     isInIntersection = true;
     intersectionCount++;
-    intersectionExitTime = millis();
+    leftE.write(0);
+    rightE.write(0);
+    isTurning = true;
   }
 
-  if (/*intersectionCount >= 1*/digitalRead(FRONT_BUMPER_PIN) == LOW) {
+  if (digitalRead(FRONT_BUMPER_PIN) == LOW) {
     leftSpeed = 90;
     rightSpeed = 90;
+  } else if (isTurning) {
+    myPID.SetMode(MANUAL);
+    leftSpeed = leftE.read() > 320 ? 90 : 75;
+    rightSpeed = rightE.read() < -150 ? 90 : 105;
+    isTurning = !(leftE.read() > 320 && rightE.read() < -150);
   } else if (sensor.isLineDetected()/*sensor.maxReading() > 200 && !isInIntersection && millis() - intersectionExitTime > 500*/) {
     Input = sensor.averageLinePosition();
     myPID.SetMode(AUTOMATIC);
