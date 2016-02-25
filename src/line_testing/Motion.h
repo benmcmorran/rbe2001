@@ -20,6 +20,7 @@ enum MotionState {
 class Motion {
 public:
   Motion();
+  void initialize();
   bool isDone();
   void turnRight();
   void turnLeft();
@@ -30,6 +31,7 @@ public:
   void update();
 
 private:
+  void setupEncoderMotion(int leftLimit, int leftSpeed, int rightLimit, int rightSpeed);
   void resetEncoders();
   void driveFromEncoder();
   void trackLine();

@@ -7,7 +7,10 @@ Motion::Motion() :
   leftEnc(19, 20),
   rightEnc(18, 3),
   setpoint(0), input(0), output(0),
-  pid(&input, &output, &setpoint, 20, 0, 3, DIRECT) {
+  pid(&input, &output, &setpoint, 10, 0, 2, DIRECT) {
+}
+
+void Motion::initialize() {
   left.attach(10);
   right.attach(11);
   pinMode(FRONT_BUMPER_PIN, INPUT_PULLUP);
@@ -20,54 +23,35 @@ bool Motion::isDone() {
 
 void Motion::turnRight() {
   state = TURN_RIGHT;
-  done = false;
-  pid.SetMode(MANUAL);
-  leftLimit = 320;
-  rightLimit = -150;
-  leftSpeed = 75;
-  rightSpeed = 105;
-  resetEncoders();
+  setupEncoderMotion(320, 75, -150, 105);
 }
 
 void Motion::turnLeft() {
   state = TURN_LEFT;
-  done = false;
-  pid.SetMode(MANUAL);
-  leftLimit = -150;
-  rightLimit = 320;
-  leftSpeed = 105;
-  rightSpeed = 75;
-  resetEncoders();
+  setupEncoderMotion(-150, 105, 320, 75);
 }
 
 void Motion::turn180() {
   state = TURN_180;
-  done = false;
-  pid.SetMode(MANUAL);
-  leftLimit = 520;
-  rightLimit = -520;
-  leftSpeed = 80;
-  rightSpeed = 107;
-  resetEncoders();
+  setupEncoderMotion(520, 80, -520, 107);
 }
 
 void Motion::reverse() {
   state = TURN_180;
-  done = false;
-  pid.SetMode(MANUAL);
-  leftLimit = 520;
-  rightLimit = -520;
-  leftSpeed = 80;
-  rightSpeed = 107;
-  resetEncoders();
+  setupEncoderMotion(-230, 105, -230, 108);
 }
 
 void Motion::trackToIntersection(int count) {
-  
+  state = TRACK_TO_INTERSECTION;
+  done = false;
+  isInIntersection = false;
+  intersectionCount = 0;
+  intersectionTarget = count;
 }
 
 void Motion::trackToBump() {
-  
+  state = TRACK_TO_BUMP;
+  done = false;
 }
 
 void Motion::update() {
@@ -98,7 +82,18 @@ void Motion::update() {
         trackLine();
       }
       break;
+  }
 } 
+
+void Motion::setupEncoderMotion(int leftLimit, int leftSpeed, int rightLimit, int rightSpeed) {
+  done = false;
+  pid.SetMode(MANUAL);
+  this->leftLimit = leftLimit;
+  this->rightLimit = rightLimit;
+  this->leftSpeed = leftSpeed;
+  this->rightSpeed = rightSpeed;
+  resetEncoders();
+}
 
 void Motion::resetEncoders() {
   leftEnc.write(0);
@@ -128,11 +123,11 @@ void Motion::trackLine() {
     input = sensor.averageLinePosition();
     pid.SetMode(AUTOMATIC);
     pid.Compute();
-    left.write(80 + output);
-    right.write(80 - output);
+    left.write(83 + output);
+    right.write(83 - output);
   } else {
-    left.write(80);
-    right.write(80);
+//    left.write(80);
+//    right.write(80);
     pid.SetMode(MANUAL);
   }
 }
