@@ -2,6 +2,15 @@
 
 #define FRONT_BUMPER_PIN 25
 
+#define ARM_LEFT_TOP_BUMPER_PIN 27
+#define ARM_LEFT_BOTTOM_BUMPER_PIN 29
+#define ARM_RIGHT_TOP_BUMPER_PIN 26
+#define ARM_RIGHT_BOTTOM_BUMPER_PIN 28
+
+#define ARM_MOTOR_LEFT_PIN 8
+#define ARM_MOTOR_RIGHT_PIN 9
+#define ARM_MOTOR_INTAKE_PIN 7
+
 Motion::Motion() :
   sensor(lineSensorPins),
   leftEnc(19, 20),
@@ -15,6 +24,15 @@ void Motion::initialize() {
   right.attach(11);
   pinMode(FRONT_BUMPER_PIN, INPUT_PULLUP);
   pid.SetOutputLimits(-80, 80);
+
+  pinMode(ARM_LEFT_TOP_BUMPER_PIN, INPUT_PULLUP);
+  pinMode(ARM_LEFT_BOTTOM_BUMPER_PIN, INPUT_PULLUP);
+  pinMode(ARM_RIGHT_TOP_BUMPER_PIN, INPUT_PULLUP);
+  pinMode(ARM_RIGHT_BOTTOM_BUMPER_PIN, INPUT_PULLUP);
+
+  armLeft.attach(ARM_MOTOR_LEFT_PIN);
+  armRight.attach(ARM_MOTOR_RIGHT_PIN);
+  armIntake.attach(ARM_MOTOR_INTAKE_PIN);
 }
 
 bool Motion::isDone() {
@@ -54,6 +72,30 @@ void Motion::trackToBump() {
   done = false;
 }
 
+void Motion::armDown() {
+  state = ARM_DOWN;
+  hitLeft = hitRight = false;
+  done = false;
+}
+
+void Motion::armUp() {
+  state = ARM_UP;
+  hitLeft = hitRight = false;
+  done = false;
+}
+
+void Motion::intakeIn() {
+  state = INTAKE_IN;
+  intakeStartTime = millis();
+  done = false;
+}
+
+void Motion::intakeOut() {
+  state = INTAKE_OUT;
+  intakeStartTime = millis();
+  done = false;
+}
+
 void Motion::update() {
   if (done) return;
 
@@ -81,6 +123,18 @@ void Motion::update() {
       } else {
         trackLine();
       }
+      break;
+    case ARM_DOWN:
+      moveArm(ARM_LEFT_BOTTOM_BUMPER_PIN, ARM_RIGHT_BOTTOM_BUMPER_PIN, 83);
+      break;
+    case ARM_UP:
+      moveArm(ARM_LEFT_TOP_BUMPER_PIN, ARM_RIGHT_TOP_BUMPER_PIN, 105);
+      break;
+    case INTAKE_IN:
+      driveIntake(110);
+      break;
+    case INTAKE_OUT:
+      driveIntake(80);
       break;
   }
 } 
@@ -129,6 +183,43 @@ void Motion::trackLine() {
 //    left.write(80);
 //    right.write(80);
     pid.SetMode(MANUAL);
+  }
+}
+
+void Motion::moveArm(int leftBumpPin, int rightBumpPin, int speed) {
+  long now = millis();
+  bool leftDone, rightDone;
+  leftDone = rightDone = false;
+  
+  if (!hitLeft && digitalRead(leftBumpPin) == LOW) {
+    hitLeft = true;
+    leftHitTime = millis();
+  } else if (hitLeft && now - leftHitTime > 200) {
+    armLeft.write(90);
+    leftDone = true;
+  } else {
+    armLeft.write(speed);
+  }
+
+  if (!hitRight && digitalRead(rightBumpPin) == LOW) {
+    hitRight = true;
+    rightHitTime = millis();
+  } else if (hitRight && now - rightHitTime > 200) {
+    armRight.write(90);
+    rightDone = true;
+  } else {
+    armRight.write(speed);
+  }
+
+  done = leftDone && rightDone;
+}
+
+void Motion::driveIntake(int speed) {
+  if (millis() - intakeStartTime > 3000) {
+    armIntake.write(90);
+    done = true;
+  } else {
+    armIntake.write(speed);
   }
 }
 

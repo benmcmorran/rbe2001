@@ -14,7 +14,11 @@ enum MotionState {
   TURN_180,
   BACKWARDS,
   TRACK_TO_INTERSECTION,
-  TRACK_TO_BUMP
+  TRACK_TO_BUMP,
+  ARM_DOWN,
+  ARM_UP,
+  INTAKE_IN,
+  INTAKE_OUT
 };
 
 class Motion {
@@ -28,6 +32,10 @@ public:
   void reverse();
   void trackToIntersection(int count);
   void trackToBump();
+  void armDown();
+  void armUp();
+  void intakeIn();
+  void intakeOut();
   void update();
 
 private:
@@ -35,6 +43,8 @@ private:
   void resetEncoders();
   void driveFromEncoder();
   void trackLine();
+  void moveArm(int leftBumpPin, int rightBumpPin, int speed);
+  void driveIntake(int speed);
 
   const int lineSensorPins[8] = { 5, 6, 7, 1, 0, 2, 3, 4 };
   LineSensor sensor;
@@ -51,6 +61,10 @@ private:
 
   double setpoint, input, output;
   PID pid;
+
+  Servo armLeft, armRight, armIntake;
+  bool hitLeft, hitRight;
+  long leftHitTime, rightHitTime, intakeStartTime;
 
   bool done = true;
   enum MotionState state;
