@@ -4,7 +4,6 @@
 #include <BluetoothMaster.h>
 #include <ReactorProtocol.h>
 #include <Arduino.h>
-#include <SimpleTimer.h>
 
 class Bluetoothh
 {
@@ -13,20 +12,18 @@ class Bluetoothh
 		void sendHB();
 		void sendLowAlert();
 		void sendHighAlert();
-		void unpack();
 		void checkstatus();
 		void sentRobotStatus(int move,int grip,int operation);
 		
 		//field
 		bool unpacked[8];
-		byte message[3];
+		byte message[2];
 		bool stopMoving;
-		bool isHB;
 
 	private:
+		void unpack();
 		ReactorProtocol pcol; 
 		BluetoothMaster btmaster;
-		SimpleTimer sptimer1;
 };
 
 #endif
