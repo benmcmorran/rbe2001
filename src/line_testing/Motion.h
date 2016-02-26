@@ -9,16 +9,16 @@
 #include "LineSensor.h"
 
 enum MotionState {
-  TURN_RIGHT,
-  TURN_LEFT,
-  TURN_180,
-  BACKWARDS,
-  TRACK_TO_INTERSECTION,
-  TRACK_TO_BUMP,
-  ARM_DOWN,
-  ARM_UP,
-  INTAKE_IN,
-  INTAKE_OUT
+  TURN_RIGHT = 0,
+  TURN_LEFT = 1,
+  TURN_180 = 2,
+  BACKWARDS = 3,
+  TRACK_TO_INTERSECTION = 4,
+  TRACK_TO_BUMP = 5,
+  ARM_DOWN = 6,
+  ARM_UP = 7,
+  INTAKE_IN = 8,
+  INTAKE_OUT = 9
 };
 
 class Motion {

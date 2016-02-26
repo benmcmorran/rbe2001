@@ -9,32 +9,61 @@ Navigator::Navigator(Motion *motion) :
   { }
 
 int Navigator::buildPlan(enum NavigatorPosition newPosition, char commandBuffer[]) {
+  // Questionable, but it should work for our purposes
+  enum NavigatorPosition currentPosition = position;
+  position = newPosition;
   int i = 0;
-
-  if (newPosition == position) return i;
+  
+  if (newPosition == currentPosition) return i;
   
   commandBuffer[i++] = (char)BACKWARDS;
   commandBuffer[i++] = (char)TURN_180;
 
   int newIndex = fieldIndex(newPosition);
-  int oldIndex = fieldIndex(position);
+  int oldIndex = fieldIndex(currentPosition);
 
-  if (newIndex == oldIndex) {
+  if (newIndex == oldIndex || (isReactor(currentPosition) && isReactor(newPosition))) {
     commandBuffer[i++] = (char)TRACK_TO_BUMP;
     return i;
   }
 
-  if (isNewRod(position)) {
+  if (isNewRod(currentPosition) || isSpentRod(currentPosition)) {
+    commandBuffer[i++] = (char)TRACK_TO_INTERSECTION;
+    commandBuffer[i++] = (char)1;
+  }
+
+  if (isNewRod(currentPosition)) {
     commandBuffer[i++] = newIndex - oldIndex > 0 ? (char)TURN_RIGHT : (char)TURN_LEFT;
-  } else if (isSpentRod(position)) {
+  } else if (isSpentRod(currentPosition)) {
     commandBuffer[i++] = newIndex - oldIndex > 0 ? (char)TURN_LEFT : (char)TURN_RIGHT;
   }
+
+  if (isReactor(newPosition)) {
+    commandBuffer[i++] = (char)TRACK_TO_BUMP;
+    return i;
+  }
+
+  commandBuffer[i++] = (char)TRACK_TO_INTERSECTION;
+  commandBuffer[i++] = (char)abs(newIndex - oldIndex);
+  
+  if ((isSpentRod(newPosition) && newIndex - oldIndex > 0) || (isNewRod(newPosition) && newIndex - oldIndex < 0)) {
+    commandBuffer[i++] = (char)TURN_LEFT;
+  } else {
+    commandBuffer[i++] = (char)TURN_RIGHT;
+  }
+
+  commandBuffer[i++] = (char)TRACK_TO_BUMP;
 
   return i;
 }
 
-void executePlan(char commandBuffer[], int count);
-void update();
+void Navigator::executePlan(char commandBuffer[], int count) {
+  
+}
+
+void Navigator::update() {
+  
+}
 
 bool Navigator::isNewRod(enum NavigatorPosition position) {
   return NEW_ROD_1 <= position && position <= NEW_ROD_4;
@@ -50,16 +79,16 @@ bool Navigator::isReactor(enum NavigatorPosition position) {
 
 int Navigator::fieldIndex(enum NavigatorPosition position) {
   switch (position) {
-    REACTOR_A: return 0;
-    REACTOR_B: return 5;
-    SPENT_ROD_1: return 4;
-    SPENT_ROD_2: return 3;
-    SPENT_ROD_3: return 2;
-    SPENT_ROD_4: return 1;
-    NEW_ROD_1: return 1;
-    NEW_ROD_2: return 2;
-    NEW_ROD_3: return 3;
-    NEW_ROD_4: return 4;
+    case REACTOR_A: return 0;
+    case REACTOR_B: return 5;
+    case SPENT_ROD_1: return 4;
+    case SPENT_ROD_2: return 3;
+    case SPENT_ROD_3: return 2;
+    case SPENT_ROD_4: return 1;
+    case NEW_ROD_1: return 1;
+    case NEW_ROD_2: return 2;
+    case NEW_ROD_3: return 3;
+    case NEW_ROD_4: return 4;
   }
 }
 
