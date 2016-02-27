@@ -58,11 +58,53 @@ int Navigator::buildPlan(enum NavigatorPosition newPosition, char commandBuffer[
 }
 
 void Navigator::executePlan(char commandBuffer[], int count) {
-  
+  this->commandBuffer = commandBuffer;
+  this->count = count;
+  index = -1; // Start at -1 so that incrementing in the first update will set it to 0
+  done = false;
 }
 
 void Navigator::update() {
+  if (done) return;
+
+  motion->update();
   
+  if (motion->isDone()) {
+    index++;
+    
+    if (index == count) {
+      done = true;
+      return;
+    }
+
+    int num;
+    switch ((enum MotionState)commandBuffer[index]) {
+      case TURN_RIGHT:
+        motion->turnRight();
+        break;
+      case TURN_LEFT:
+        motion->turnLeft();
+        break;
+      case TURN_180:
+        motion->turn180();
+        break;
+      case BACKWARDS:
+        motion->reverse();
+        break;
+      case TRACK_TO_INTERSECTION:
+        index++;
+        num = commandBuffer[index];
+        motion->trackToIntersection(num);
+        break;
+      case TRACK_TO_BUMP:
+        motion->trackToBump();
+        break;
+    }
+  }
+}
+
+bool Navigator::isDone() {
+  return done;
 }
 
 bool Navigator::isNewRod(enum NavigatorPosition position) {

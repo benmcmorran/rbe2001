@@ -22,6 +22,7 @@ public:
   int buildPlan(enum NavigatorPosition newPosition, char commandBuffer[]);
   void executePlan(char commandBuffer[], int count);
   void update();
+  bool isDone();
   
 private:
   bool isNewRod(enum NavigatorPosition position);
@@ -33,6 +34,7 @@ private:
   enum NavigatorPosition position;
   char *commandBuffer;
   int count, index;
+  bool done = true;
 };
 
 #endif

@@ -70,6 +70,7 @@ void Motion::trackToIntersection(int count) {
 void Motion::trackToBump() {
   state = TRACK_TO_BUMP;
   done = false;
+  hitFrontBump = false;
 }
 
 void Motion::armDown() {
@@ -116,10 +117,13 @@ void Motion::update() {
       }
       break;
     case TRACK_TO_BUMP:
-      if (digitalRead(FRONT_BUMPER_PIN) == LOW) {
+      if (hitFrontBump && millis() - frontBumpTime > 1000) {
         left.write(90);
         right.write(90);
         done = true;
+      } else if (!hitFrontBump && digitalRead(FRONT_BUMPER_PIN) == LOW) {
+        hitFrontBump = true;
+        frontBumpTime = millis();
       } else {
         trackLine();
       }
@@ -215,7 +219,7 @@ void Motion::moveArm(int leftBumpPin, int rightBumpPin, int speed) {
 }
 
 void Motion::driveIntake(int speed) {
-  if (millis() - intakeStartTime > 3000) {
+  if (millis() - intakeStartTime > 2000) {
     armIntake.write(90);
     done = true;
   } else {

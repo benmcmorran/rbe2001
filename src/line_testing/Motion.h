@@ -61,6 +61,8 @@ private:
 
   double setpoint, input, output;
   PID pid;
+  bool hitFrontBump;
+  long frontBumpTime;
 
   Servo armLeft, armRight, armIntake;
   bool hitLeft, hitRight;

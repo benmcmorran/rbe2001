@@ -7,61 +7,66 @@
 
 Motion motion;
 Navigator navigator(&motion);
+char commandBuffer[10];
 
 void setup() {
   motion.initialize();
-  Serial.begin(9600);
-  delay(3000);
-  Serial.println("Starting pathing");
-  printPlan(SPENT_ROD_3);
-  printPlan(NEW_ROD_4);
-  printPlan(REACTOR_A);
-  printPlan(REACTOR_B);
-  printPlan(SPENT_ROD_4);
-  printPlan(NEW_ROD_1);
-  printPlan(REACTOR_B);
+  motion.armUp(); wait();
+  motion.trackToBump(); wait();
+  motion.armDown(); wait();
+  motion.intakeIn(); wait();
+  motion.armUp(); wait();
+  
+  goTo(SPENT_ROD_2);
+
+  motion.intakeOut(); wait();
+  
+  goTo(NEW_ROD_3);
+
+  motion.intakeIn(); wait();
+  
+  goTo(REACTOR_A);
+
+  motion.armDown(); wait();
+  motion.intakeOut(); wait();
+  motion.armUp(); wait();
+  
+  goTo(REACTOR_B);
+
+  motion.armDown(); wait();
+  motion.intakeIn(); wait();
+  motion.armUp(); wait();
+  
+  goTo(SPENT_ROD_3);
+
+  motion.intakeOut(); wait();
+  
+  goTo(NEW_ROD_4);
+
+  motion.intakeIn(); wait();
+  
+  goTo(REACTOR_B);
+
+  motion.armDown(); wait();
+  motion.intakeOut(); wait();
+  motion.armUp(); wait();
 }
 
-void printPlan(enum NavigatorPosition newPosition) {
-  char commandBuffer[10];
-  int length = navigator.buildPlan(newPosition, commandBuffer);
-  Serial.println(length);
-  for (int i = 0; i < length; i++) {
-    Serial.print((int)commandBuffer[i]);
-    Serial.print(" ");
+void goTo(enum NavigatorPosition pos) {
+  int length = navigator.buildPlan(pos, commandBuffer);
+  navigator.executePlan(commandBuffer, length);
+
+  while (!navigator.isDone()) {
+    navigator.update();
   }
-  Serial.println();
+}
+
+void wait() {
+  while (!motion.isDone()) {
+    motion.update();
+  }
 }
 
 void loop() {
-//  motion.armUp();
-//  while (!motion.isDone()) motion.update();
-//  motion.intakeIn();
-//  while (!motion.isDone()) motion.update();
-//  motion.armDown();
-//  while (!motion.isDone()) motion.update();
-//  motion.intakeOut();
-//  while (!motion.isDone()) motion.update();
-  
-//  motion.trackToIntersection(2);
-//  while (!motion.isDone()) motion.update();
-//  motion.turnRight();
-//  while (!motion.isDone()) motion.update();
-//  motion.trackToBump();
-//  while (!motion.isDone()) motion.update();
-//  motion.reverse();
-//  while (!motion.isDone()) motion.update();
-//  motion.turn180();
-//  while (!motion.isDone()) motion.update();
-//  motion.trackToIntersection(1);
-//  while (!motion.isDone()) motion.update();
-//  motion.turnRight();
-//  while (!motion.isDone()) motion.update();
-//  motion.trackToBump();
-//  while (!motion.isDone()) motion.update();
-//  motion.reverse();
-//  while (!motion.isDone()) motion.update();
-//  motion.turn180();
-//  while (!motion.isDone()) motion.update();
 }
 
