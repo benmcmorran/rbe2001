@@ -23,7 +23,8 @@ public:
   void executePlan(char commandBuffer[], int count);
   void update();
   bool isDone();
-  
+  enum NavigatorPosition getIndex(); //Added by Dorothy
+
 private:
   bool isNewRod(enum NavigatorPosition position);
   bool isSpentRod(enum NavigatorPosition position);
