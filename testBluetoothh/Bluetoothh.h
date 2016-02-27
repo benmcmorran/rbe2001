@@ -8,7 +8,7 @@
 class Bluetoothh
 {
 	public:
-		Bluetoothh(int team);
+		Bluetoothh(byte teamn);
 		void sendHB();
 		void sendLowAlert();
 		void sendHighAlert();
@@ -21,8 +21,9 @@ class Bluetoothh
 
 	private:
 		void unpack();
-		byte message[2];
-		bool unpacked[8];
+		byte message[2]={0x00,0x00};
+		bool unpacked[8]={false,false,false,false,false,false,false,false};
+    byte team;
 
 		ReactorProtocol pcol; 
 		BluetoothMaster btmaster;

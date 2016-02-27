@@ -1,55 +1,55 @@
 #include "Bluetoothh.h"
+#include <BluetoothMaster.h>
+#include <ReactorProtocol.h>
 
-
-Bluetoothh::Bluetoothh(int team) : pcol(byte(team)),stopMoving(false)
+Bluetoothh::Bluetoothh(byte teamn):team(teamn),pcol(teamn),stopMoving(false)
 {
-	Serial.begin(115200); // configure the console comm port to 115200 baud
-  Serial1.begin(115200);  // the slave bluetooth module is also configured to 115200 baud
-  bool unpacked[8] = {false,false,false,false,false,false,false,false};
-	byte message[2]={0x00,0x00};
+//	Serial.begin(115200); // configure the console comm port to 115200 baud
+//  Serial1.begin(115200);  // the slave bluetooth module is also configured to 115200 baud
+
 }
 
 void Bluetoothh::sendHB(){
 	byte data[3];
-	byte pakage[10];
+	byte package[10];
 	int size;
 
 	pcol.setDst(0x00);		
-	size = pcol.createPkt(0x07, data, pakage);
-    btmaster.sendPkt(pakage, size);   
+	size = pcol.createPkt(0x07, data, package);
+    btmaster.sendPkt(package, size);   
 }
 
 void Bluetoothh::sendLowAlert(){
 	byte data[3];
-	byte pakage[10];
+	byte package[10];
 	int size;
 
 	data[0] = 0x2C; 
 	pcol.setDst(0x00); 
-	size = pcol.createPkt(0x03, data, pakage);
-    btmaster.sendPkt(pakage, size); 
+	size = pcol.createPkt(0x03, data, package);
+    btmaster.sendPkt(package, size); 
 }
 
 void Bluetoothh::sendHighAlert(){
 	byte data[3];
-	byte pakage[10];
+	byte package[10];
 	int size;
 
 	data[0] = 0xFF;
 	pcol.setDst(0x00);		
-	size = pcol.createPkt(0x03, data, pakage);
-    btmaster.sendPkt(pakage, size); 
+	size = pcol.createPkt(0x03, data, package);
+    btmaster.sendPkt(package, size); 
 }
 
 void Bluetoothh::checkstatus(){
 	byte data[3];
-	byte pakage[10];
+	byte package[10];
 	byte type;
 	int size;
-
-	if(btmaster.readPacket(pakage)){
-		if (pcol.getData(pakage, data, type)){
-			if(pakage[4]== 0x00||pakage[4]==((byte)team)){
+	if(btmaster.readPacket(package)){
+		if (pcol.getData(package, data, type)){
+			if(package[4]== 0x00||package[4]==team){
+//        Serial.println("Received");
 				switch(type){
 					case 0x01: //storage availability
 						message[0] = data[0];
@@ -74,13 +74,25 @@ void Bluetoothh::checkstatus(){
 
 void Bluetoothh::unpack(){		
 		unpacked[3] = (bool) !((message[0] & (byte) 0x01)); //isEmpty?
+//    Serial.print(unpacked[3]);
 		unpacked[2] = (bool) !((message[0] & (byte) 0x02) >>1);
+//    Serial.print(unpacked[2]);
 		unpacked[1] = (bool) !((message[0] & (byte) 0x04) >>2);
+//    Serial.print(unpacked[1]);
 		unpacked[0] = (bool) !((message[0] & (byte) 0x08) >>3);
+//    Serial.print(unpacked[0]);
+//    Serial.println("");
 		unpacked[4] = (bool) (message[1] & 0x01);
-		unpacked[5] = (bool) (message[1] & 0x02) >>1;
-		unpacked[6] = (bool) (message[1] & 0x04) >>2;
-		unpacked[7] = (bool) (message[1] & 0x08) >>3; //hasRod?
+//    Serial.print(unpacked[4]);
+		unpacked[5] = (bool) ((message[1] & 0x02) >>1);
+//    Serial.print(unpacked[5]);
+		unpacked[6] = (bool) ((message[1] & 0x04) >>2);
+//    Serial.print(unpacked[6]);
+		unpacked[7] = (bool) ((message[1] & 0x08) >>3); //hasRod?
+//    Serial.print(unpacked[7]);
+//    Serial.println("");
+//    Serial.println("Message[1]");
+//    Serial.println(message[1]);
 }
 
 bool Bluetoothh::getUnpack(int bluetoothIndex){
@@ -90,7 +102,7 @@ bool Bluetoothh::getUnpack(int bluetoothIndex){
 //basically useless fuction, for debug purpose(maybe??)
 void Bluetoothh::sendRobotStatus(int move, int grip, int operation){
 	byte data[3];
-	byte pakage[10];
+	byte package[10];
 	int size;
 
 	switch(move){
@@ -142,6 +154,6 @@ void Bluetoothh::sendRobotStatus(int move, int grip, int operation){
 	}
 
 	pcol.setDst(0x00);		
-	size = pcol.createPkt(0x06, data, pakage);
-    btmaster.sendPkt(pakage, size); 
+	size = pcol.createPkt(0x06, data, package);
+    btmaster.sendPkt(package, size); 
 }
