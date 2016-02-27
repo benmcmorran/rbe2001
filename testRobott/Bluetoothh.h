@@ -22,7 +22,7 @@ class Bluetoothh
 	private:
 		void unpack();
 		byte message[2]={0x00,0x00};
-		bool unpacked[8]={false,false,false,false,false,false,false,false};
+		bool unpacked[8]={true,false,false,false,true,true,false,false};
     byte team;
 		ReactorProtocol pcol; 
 		BluetoothMaster btmaster;
