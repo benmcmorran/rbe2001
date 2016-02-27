@@ -92,3 +92,8 @@ int Navigator::fieldIndex(enum NavigatorPosition position) {
   }
 }
 
+
+//Added by Dorothy
+enum NavigatorPosition Navigator::getIndex(){
+  return position;
+}

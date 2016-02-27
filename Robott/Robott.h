@@ -2,23 +2,19 @@
 #define ROBOTT_H
 
 #include "Bluetoothh.h"
-#include "Robott.h"
-#include "LineSensor.h"
-#include "Motor.h"
 #include "Navigator.h"
 #include <SimpleTimer.h>
 
 enum RobotState{
-	INITIAL,
-	STOP,
+	GO_TO_REACTOR,
+	GET_SPENT_ROD,
 	GO_SPENT_FIELD,
+	STORE_SPENT_ROD,
 	GO_NEW_FIELD,
-}rstate;
+	GET_NEW_ROD,
+	STORE_NEW_ROD,
+};
 
-enum MotionState{
-	STORE_ROD,
-	GET_ROD,
-}mstate;
 
 class Robott{
 	public:
@@ -26,15 +22,25 @@ class Robott{
 		void main();
 
 	private:
+		enum NavigatorPosition priorDestination();
+		bool checkOtherSide();
+		void updateNavi(int n);
+		void conditional_miniStopState();
+		void gotoField(enum NavigatorPosition dest);
+		void gotoReactor();
+
+
+		
 		Bluetoothh blue;
 		Navigator navi;
 		SimpleTimer sptimer1;
+
 		bool isHB;
 		bool roundNotDone;
 		int round_counter;
-		enum RobotState rstate;
-		enum RobotState lrstate;
-		//need a roller obj (maybe?)
+		enum RobotState robot_state;
+		enum RobotState statelist[8];
+		int stateIndex;
 };
 
 #endif

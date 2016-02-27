@@ -47,45 +47,48 @@ void Bluetoothh::checkstatus(){
 	byte type;
 	int size;
 
-if(btmaster.readPacket(pakage)){
-	if (pcol.getData(pakage, data, type)){
-		if(pakage[4]== 0x00||pakage[4]==((byte)team)){
-			switch(type){
-				case 0x01: //storage availability
-					message[0] = data[0];
-					break;
-				case 0X02: //supply
-					message[1] = data[0];
-					break;
-				case 0x04: //stop movement
-					stopMoving = true;
-					break;
-				case 0x05: //resume movement
-					stopMoving = false;
-					break;
-				default:
-					break;
+	if(btmaster.readPacket(pakage)){
+		if (pcol.getData(pakage, data, type)){
+			if(pakage[4]== 0x00||pakage[4]==((byte)team)){
+				switch(type){
+					case 0x01: //storage availability
+						message[0] = data[0];
+						break;
+					case 0X02: //supply
+						message[1] = data[0];
+						break;
+					case 0x04: //stop movement
+						stopMoving = true;
+						break;
+					case 0x05: //resume movement
+						stopMoving = false;
+						break;
+					default:
+						break;
+				}
 			}
-		}
-	}	
-}
+		}	
+	}
 	unpack();
 }
 
 void Bluetoothh::unpack(){		
-		unpacked[0] = (bool) (message[0] & (byte) 0x01);
-		unpacked[1] = (bool) (message[0] & (byte) 0x02) >>1;
-		unpacked[2] = (bool) (message[0] & (byte) 0x04) >>2;
-		unpacked[3] = (bool) (message[0] & (byte) 0x08) >>3;
+		unpacked[3] = (bool) !((message[0] & (byte) 0x01)); //isEmpty?
+		unpacked[2] = (bool) !((message[0] & (byte) 0x02) >>1);
+		unpacked[1] = (bool) !((message[0] & (byte) 0x04) >>2);
+		unpacked[0] = (bool) !((message[0] & (byte) 0x08) >>3);
 		unpacked[4] = (bool) (message[1] & 0x01);
 		unpacked[5] = (bool) (message[1] & 0x02) >>1;
 		unpacked[6] = (bool) (message[1] & 0x04) >>2;
-		unpacked[7] = (bool) (message[1] & 0x08) >>3;
+		unpacked[7] = (bool) (message[1] & 0x08) >>3; //hasRod?
 }
 
+bool Bluetoothh::getUnpack(int bluetoothIndex){
+	return unpacked[bluetoothIndex];
+}
 
 //basically useless fuction, for debug purpose(maybe??)
-void Bluetoothh::sentRobotStatus(int move, int grip, int operation){
+void Bluetoothh::sendRobotStatus(int move, int grip, int operation){
 	byte data[3];
 	byte pakage[10];
 	int size;
@@ -101,7 +104,7 @@ void Bluetoothh::sentRobotStatus(int move, int grip, int operation){
 			data[0] = 0x03; //moving(autonomous)
 			break;		
 		default:
-			data[0] = 0x00;	
+			data[0] = byte(move);	
 	}
 	
 	switch(grip){
@@ -112,7 +115,7 @@ void Bluetoothh::sentRobotStatus(int move, int grip, int operation){
 			data[1] = 0x02; //Have rod
 			break;		
 		default:
-			data[1] = 0x00;	
+			data[1] = byte(grip);	
 	}
 	
 	switch(operation){
@@ -135,7 +138,7 @@ void Bluetoothh::sentRobotStatus(int move, int grip, int operation){
 			data[2] = 0x06; //No operation in progress
 			break;		
 		default:
-			data[2] = 0x00;	
+			data[2] = byte(operation);	
 	}
 
 	pcol.setDst(0x00);		
