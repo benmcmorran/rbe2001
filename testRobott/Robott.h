@@ -35,8 +35,11 @@ class Robott{
 		void storeSpentRod();
 		void getNewRod();
 		void getSpentRod();
-		void wait();
+		void wait(bool flag);
 		void updateState();
+		void sendAlert(int level);
+		void initialWait();
+		
 		Bluetoothh blue;
 		Navigator navi;
 		Motion motion;

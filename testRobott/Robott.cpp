@@ -14,8 +14,9 @@ void Robott::initialize(){
 		}
 	}while(!blue.isConnected());
 	motion.initialize();
-  motion.armUp(); wait();
-  motion.trackToBump(); wait();
+  motion.armUp(); initialWait();
+  motion.trackToBump(); initialWait();
+  pinMode(22,OUTPUT);
 }
 
 void Robott::main(){
@@ -61,7 +62,7 @@ void Robott::main(){
 	}
 }
 
-void Robott::wait() {
+void Robott::wait(bool flag) {
   while (!motion.isDone()) {
     motion.update();
     if(isHB){
@@ -69,26 +70,29 @@ void Robott::wait() {
 				isHB = false;
 		}
 		motion.update();
-    switch(robot_state){
-    	case GO_SPENT_FIELD: case STORE_SPENT_ROD: case GET_SPENT_ROD:
-    		if(isAlert){
-    			blue.sendLowAlert();
-    			isAlert = false;
-    		}
-    		break;
-    	case GO_TO_REACTOR: case GET_NEW_ROD: case STORE_NEW_ROD:
-    		if(stateIndex!=0 && isAlert){
-    			blue.sendHighAlert();
-    			isAlert = false;
-    		}
-    		break;
-			default:
-				blue.sendRobotStatus(190,190,190);
-				break; 
-    }
+		if(flag){
+	    switch(robot_state){
+	    	case GET_SPENT_ROD: 
+	    	case STORE_SPENT_ROD:
+	    		sendAlert(0);
+	    		break;
+	    	case STORE_NEW_ROD:
+	    	case GET_NEW_ROD:
+	    		sendAlert(1);
+	    		break;
+				default:
+					blue.sendRobotStatus(190,190,190);
+					break; 
+	    }
+	  }
   }
 }
 
+void Robott::initialWait(){
+	while (!motion.isDone()) {
+    motion.update();
+  }
+}
 
 void Robott::gotoReactor(){
 		if(round_counter==2){		
@@ -99,30 +103,37 @@ void Robott::gotoReactor(){
 		navi.executePlan(command,count);
 		while(!navi.isDone()){
 			updateNavi(5);
-			Serial.println("I am in the gotoReactor LOOP"); ////////////////////////////////////////////////////////////
 			blue.checkstatus();
 			if(isHB){
 				blue.sendHB();
 				isHB = false;
 			}
+			sendAlert(1);
 			conditional_miniStopState();		
 		}
 }
 
 
 void Robott::gotoField(){
+		for(int i=0;i<15;i++){
+			blue.checkstatus();
+			if(isHB){
+				blue.sendHB();
+				isHB = false;
+			}
+		}
 		enum NavigatorPosition dest = priorDestination();
-		Serial.println("The prior Dest is");
-		Serial.print(dest); ////////////////////////////////////////////////////////////////////
 		count = navi.buildPlan(dest,command);
 		navi.executePlan(command,count);
 		while(!navi.isDone()){
-			Serial.println("I am in the gotoField LOOP"); ////////////////////////////////////////////////////////////
 			updateNavi(15);	
 			blue.checkstatus();
 			if(isHB){
 				blue.sendHB();
 				isHB = false;
+			}
+			if(robot_state==GO_SPENT_FIELD){
+				sendAlert(0);
 			}
 			conditional_miniStopState();
 		}
@@ -189,23 +200,23 @@ void Robott::conditional_miniStopState(){
 
 
 void Robott::storeNewRod(){
-  motion.armDown(); wait();
-  motion.intakeOut(); wait();
-  motion.armUp(); wait();
+  motion.armDown(); wait(true);
+  motion.intakeOut(); wait(true);
+  motion.armUp(); wait(false);
 }
 
 void Robott::storeSpentRod(){
-	motion.intakeOut(); wait();
+	motion.intakeOut(); wait(true);
 }
 
 void Robott::getNewRod(){
-	motion.intakeIn(); wait();
+	motion.intakeIn(); wait(true);
 }
 
 void Robott::getSpentRod(){
-	motion.armDown(); wait();
-  motion.intakeIn(); wait();
-  motion.armUp(); wait();
+	motion.armDown(); wait(false);
+  motion.intakeIn(); wait(true);
+  motion.armUp(); wait(true);
 }
 
 
@@ -220,4 +231,21 @@ void Robott::updateState(){
 		roundNotDone = false;
 	}
 	robot_state = statelist[stateIndex];
+}
+
+void Robott::sendAlert(int level){
+	if(level==0){
+		if(isAlert){
+			blue.sendLowAlert();
+    	isAlert = false;
+    	digitalWrite(22,HIGH);
+		}
+	}
+	else{
+		if(isAlert && stateIndex!=0){
+			blue.sendHighAlert();
+			digitalWrite(22,HIGH);
+    	isAlert = false;
+		}
+	}
 }
