@@ -15,7 +15,8 @@ class Bluetoothh
 		void checkstatus();
 		void sendRobotStatus(int move,int grip,int operation);
 		bool getUnpack(int bluetoothIndex);
-
+    byte getTeam();
+    
 		//field
 		bool stopMoving=false;
 

@@ -1,4 +1,5 @@
 #include "Bluetoothh.h"
+#include <Arduino.h>
 
 Bluetoothh::Bluetoothh(byte teamn):team(teamn),pcol(teamn)
 {
@@ -43,8 +44,11 @@ void Bluetoothh::checkstatus(){
 	int size;
 	if(btmaster.readPacket(package)){
 		if (pcol.getData(package, data, type)){
+//    Serial.println("GetData");
 			if(package[4]== 0x00||package[4]==team){
-//        Serial.println("Received");
+//       Serial.println("Received");
+//        Serial.print("type    ");
+//        Serial.println(type);
 				switch(type){
 					case 0x01: //storage availability
 						message[0] = data[0];
@@ -54,6 +58,7 @@ void Bluetoothh::checkstatus(){
 						break;
 					case 0x04: //stop movement
 						stopMoving = true;
+            Serial.println("Received stopmoving");
 						break;
 					case 0x05: //resume movement
 						stopMoving = false;
@@ -152,3 +157,8 @@ void Bluetoothh::sendRobotStatus(int move, int grip, int operation){
 	size = pcol.createPkt(0x06, data, package);
     btmaster.sendPkt(package, size); 
 }
+
+byte Bluetoothh::getTeam(){
+  return team;
+}
+

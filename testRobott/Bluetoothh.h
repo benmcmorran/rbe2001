@@ -15,14 +15,16 @@ class Bluetoothh
 		void checkstatus();
 		void sendRobotStatus(int move,int grip,int operation);
 		bool getUnpack(int bluetoothIndex);
-
+    byte getTeam();
+    bool isConnected();
+    
 		//field
 		bool stopMoving=false;
 
 	private:
 		void unpack();
 		byte message[2]={0x00,0x00};
-		bool unpacked[8]={true,false,false,false,true,true,false,false};
+		bool unpacked[8]={false,false,false,false,false,false,false,false};
     byte team;
 		ReactorProtocol pcol; 
 		BluetoothMaster btmaster;

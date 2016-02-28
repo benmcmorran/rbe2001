@@ -1,4 +1,4 @@
-#include "Arduino.h"
+#include <Arduino.h>
 #include "Robott.h"
 
 Robott::Robott(int ourteam):blue((byte)ourteam),navi(&motion)
@@ -6,12 +6,16 @@ Robott::Robott(int ourteam):blue((byte)ourteam),navi(&motion)
 }
 
 void Robott::initialize(){
+	do{
+		blue.checkstatus();
+		if(isHB){
+			blue.sendHB();
+			isHB = false;
+		}
+	}while(!blue.isConnected());
 	motion.initialize();
   motion.armUp(); wait();
   motion.trackToBump(); wait();
-  motion.armDown(); wait();
-  motion.intakeIn(); wait();
-  motion.armUp(); wait();
 }
 
 void Robott::main(){
@@ -23,57 +27,29 @@ void Robott::main(){
 			{
 				case GO_TO_REACTOR:
 					gotoReactor();
-					stateIndex++;
-					if(stateIndex>=8){
-						stateIndex = 0;
-						roundNotDone = false;
-					}
-					robot_state = statelist[stateIndex];
+					updateState();
 					break;
-				case GO_SPENT_FIELD: case GO_NEW_FIELD:
+				case GO_SPENT_FIELD: 
+				case GO_NEW_FIELD:
 					gotoField();
-					stateIndex++;
-					if(stateIndex>=8){
-						stateIndex = 0;
-						roundNotDone = false;
-					}
-					robot_state = statelist[stateIndex];
+					updateState();
 					break;
 				case STORE_NEW_ROD:
 					storeNewRod();
-					stateIndex++;
-					if(stateIndex>=8){
-						stateIndex = 0;
-						roundNotDone = false;
-					}
+					updateState();
 					break;
 				case STORE_SPENT_ROD:
 					storeSpentRod();
-					stateIndex++;
-					if(stateIndex>=8){
-						stateIndex = 0;
-						roundNotDone = false;
-					}
-					robot_state = statelist[stateIndex];
+					updateState();
 					break;
 				case GET_NEW_ROD:
 					getNewRod();
-					stateIndex++;
-					if(stateIndex>=8){
-						stateIndex = 0;
-						roundNotDone = false;
-					}
-					robot_state = statelist[stateIndex];
+					updateState();
 					break;
 				case GET_SPENT_ROD:
           Serial.println("IN GET_SPENT_ROD STATE");
 					getSpentRod();
-					stateIndex++;
-					if(stateIndex>=8){
-						stateIndex = 0;
-						roundNotDone = false;
-					}
-					robot_state = statelist[stateIndex];
+					updateState();
 					break;
 				default:
 					blue.sendRobotStatus(171,171,171);
@@ -83,26 +59,6 @@ void Robott::main(){
 		round_counter--;
 		roundNotDone=true;
 	}
-}
-
-void Robott::storeNewRod(){
-  motion.armDown(); wait();
-  motion.intakeOut(); wait();
-  motion.armUp(); wait();
-}
-
-void Robott::storeSpentRod(){
-	motion.intakeOut(); wait();
-}
-
-void Robott::getNewRod(){
-	motion.intakeIn(); wait();
-}
-
-void Robott::getSpentRod(){
-	motion.armDown(); wait();
-  motion.intakeIn(); wait();
-  motion.armUp(); wait();
 }
 
 void Robott::wait() {
@@ -115,11 +71,16 @@ void Robott::wait() {
 		motion.update();
     switch(robot_state){
     	case GO_SPENT_FIELD: case STORE_SPENT_ROD: case GET_SPENT_ROD:
-    		blue.sendLowAlert();
+    		if(isAlert){
+    			blue.sendLowAlert();
+    			isAlert = false;
+    		}
     		break;
     	case GO_TO_REACTOR: case GET_NEW_ROD: case STORE_NEW_ROD:
-    		if(stateIndex!=0)
+    		if(stateIndex!=0 && isAlert){
     			blue.sendHighAlert();
+    			isAlert = false;
+    		}
     		break;
 			default:
 				blue.sendRobotStatus(190,190,190);
@@ -226,10 +187,37 @@ void Robott::conditional_miniStopState(){
 	}
 }
 
+
+void Robott::storeNewRod(){
+  motion.armDown(); wait();
+  motion.intakeOut(); wait();
+  motion.armUp(); wait();
+}
+
+void Robott::storeSpentRod(){
+	motion.intakeOut(); wait();
+}
+
+void Robott::getNewRod(){
+	motion.intakeIn(); wait();
+}
+
+void Robott::getSpentRod(){
+	motion.armDown(); wait();
+  motion.intakeIn(); wait();
+  motion.armUp(); wait();
+}
+
+
 void Robott::setIsHB(bool outsideHB){
 	isHB = outsideHB;
 }
 
-bool Robott::getHB(){
-	return isHB;
+void Robott::updateState(){
+	stateIndex++;
+	if(stateIndex>=8){
+		stateIndex = 0;
+		roundNotDone = false;
+	}
+	robot_state = statelist[stateIndex];
 }
