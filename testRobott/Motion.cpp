@@ -98,7 +98,7 @@ void Motion::intakeOut() {
 }
 
 void Motion::update() {
-  if (done) return;
+  if (done || isStopped) return;
 
   switch (state) {
     case TURN_RIGHT:
@@ -142,6 +142,19 @@ void Motion::update() {
       break;
   }
 } 
+
+void Motion::stop() {
+  isStopped = true;
+  left.write(90);
+  right.write(90);
+  armLeft.write(90);
+  armRight.write(90);
+  armIntake.write(90);
+}
+
+void Motion::resume() {
+  isStopped = false;
+}
 
 void Motion::setupEncoderMotion(int leftLimit, int leftSpeed, int rightLimit, int rightSpeed) {
   done = false;

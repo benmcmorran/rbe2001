@@ -37,6 +37,8 @@ public:
   void intakeIn();
   void intakeOut();
   void update();
+  void stop();
+  void resume();
 
 private:
   void setupEncoderMotion(int leftLimit, int leftSpeed, int rightLimit, int rightSpeed);
@@ -68,6 +70,7 @@ private:
   bool hitLeft, hitRight;
   long leftHitTime, rightHitTime, intakeStartTime;
 
+  bool isStopped = false;
   bool done = true;
   enum MotionState state;
 };
