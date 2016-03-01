@@ -3,6 +3,10 @@
 
 #include "Arduino.h"
 
+/*
+ * Encapsulates an 8 analog line sensor array and provides 
+ * useful functions for reading it.
+ */
 class LineSensor {
 public:
 	LineSensor(const int pins[]);
