@@ -32,7 +32,7 @@ void loop() {
  blue.checkstatus();
 // blue.sendHighAlert();
 //// delay(500);
- printBlue();
+// printBlue();
 // blue.sendRobotStatus(255,190,205);
 // delay(500);
 

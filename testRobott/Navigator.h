@@ -3,6 +3,10 @@
 
 #include "Motion.h"
 
+/*
+ * NavigatorPosition represents all possible field positions next to
+ * supply rods.
+ */
 enum NavigatorPosition {
   REACTOR_A = 0,
   REACTOR_B = 1,
@@ -16,6 +20,12 @@ enum NavigatorPosition {
   NEW_ROD_4 = 9
 };
 
+/*
+ * Navigator builds motion plans to navigate from one NavigatorPosition
+ * to another. Plans are stored in a command buffer which can be executed
+ * by execute plan. Navigator is non-blocking, and update() should be
+ * called repeatedly.
+ */
 class Navigator {
 public:
   Navigator(Motion *motion);

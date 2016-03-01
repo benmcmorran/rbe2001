@@ -47,8 +47,8 @@ void Bluetoothh::checkstatus(){
 //    Serial.println("GetData");
 			if(package[4]== 0x00||package[4]==team){
 //       Serial.println("Received");
-//        Serial.print("type    ");
-//        Serial.println(type);
+        Serial.print("type    ");
+        Serial.println(type);
 				switch(type){
 					case 0x01: //storage availability
 						message[0] = data[0];
@@ -162,3 +162,10 @@ byte Bluetoothh::getTeam(){
   return team;
 }
 
+bool Bluetoothh::isConnected(){
+	int i;
+	for(i=4;i<8;i++){
+		if (getUnpack(i)) return true;
+	}
+	return false;
+}
