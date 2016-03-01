@@ -8,6 +8,11 @@
 
 #include "LineSensor.h"
 
+/*
+ * MotionState represents all the possible actions the robot can take.
+ * The states are explictly numbered so that they can be packed into
+ * a char by the Navigator.
+ */
 enum MotionState {
   TURN_RIGHT = 0,
   TURN_LEFT = 1,
@@ -21,6 +26,11 @@ enum MotionState {
   INTAKE_OUT = 9
 };
 
+/*
+ * Motion drives all motion on the robot. It is designed to be non-blocking
+ * by simply calling the appropriate function and then repeatedly calling
+ * update().
+ */
 class Motion {
 public:
   Motion();
@@ -33,7 +43,7 @@ public:
   void trackToIntersection(int count);
   void trackToBump();
   void armDown();
-  void armUp();
+  void armUp(bool dispensingRod);
   void intakeIn();
   void intakeOut();
   void update();
@@ -69,6 +79,7 @@ private:
   Servo armLeft, armRight, armIntake;
   bool hitLeft, hitRight;
   long leftHitTime, rightHitTime, intakeStartTime;
+  bool dispensingRod;
 
   bool isStopped = false;
   bool done = true;

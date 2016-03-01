@@ -16,7 +16,7 @@ void Robott::initialize(){
 		}
 	}while(!blue.isConnected()); //if its connect, break the checking loop
 	motion.initialize();	//attach all the pins 
-  motion.armUp(); wait(false); //raise the roller up
+  motion.armUp(false); wait(false); //raise the roller up
   motion.trackToBump(); wait(false); //locate reactor A and build a map
   pinMode(alertLED,OUTPUT); //register  the alert LED pin
 }
@@ -212,7 +212,7 @@ void Robott::miniStopState(){
 void Robott::storeNewRod(){
   motion.armDown(); wait(true); //roll the arm own while sending a high alert message
   motion.intakeOut(); wait(true); //store the rod while sending a high alert message
-  motion.armUp(); wait(false); //raise the arm up
+  motion.armUp(true); wait(false); //raise the arm up
 }
 
 /**Store a spent rod into the storage place
@@ -232,7 +232,7 @@ void Robott::getNewRod(){
 void Robott::getSpentRod(){
 	motion.armDown(); wait(false); //roll the arm down
   motion.intakeIn(); wait(true); //take out a spent rod from the reactor while sending a low alert message
-  motion.armUp(); wait(true); //raise the arm up while sending a low alert message
+  motion.armUp(false); wait(true); //raise the arm up while sending a low alert message
 }
 
 /**Set the heart beat flag
