@@ -1,6 +1,8 @@
 #ifndef ROBOTT_H
 #define ROBOTT_H
 
+#define alertLED 22
+
 #include "Motion.h"
 #include "Bluetoothh.h"
 #include "Navigator.h"
@@ -28,7 +30,7 @@ class Robott{
 		enum NavigatorPosition priorDestination();
 		bool checkOtherSide();
 		void updateNavi(int n);
-		void conditional_miniStopState();
+		void miniStopState();
 		void gotoField();
 		void gotoReactor();
 		void storeNewRod();
@@ -38,7 +40,6 @@ class Robott{
 		void wait(bool flag);
 		void updateState();
 		void sendAlert(int level);
-		void initialWait();
 		
 		Bluetoothh blue;
 		Navigator navi;
