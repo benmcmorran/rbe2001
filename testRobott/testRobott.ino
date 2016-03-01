@@ -1,7 +1,8 @@
 #include <TimerThree.h>
 #include <TimerOne.h>
-#include <SimpleTimer.h>
+//#include <SimpleTimer.h>
 #include "Robott.h"
+#include "tone.h"
 
 Robott R(12);
 
@@ -15,10 +16,11 @@ void setup() {
   Timer3.initialize(1000000);
   Timer3.attachInterrupt(sendAlert_ISR);
   R.initialize();
+  R.main();
 }
 
 void loop() {
-  R.main();
+  play_rtttl(song);
 }
 
 void sendHB_ISR(){

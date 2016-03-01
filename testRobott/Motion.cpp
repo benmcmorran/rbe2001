@@ -79,9 +79,10 @@ void Motion::armDown() {
   done = false;
 }
 
-void Motion::armUp() {
+void Motion::armUp(bool dispensingRod) {
   state = ARM_UP;
   hitLeft = hitRight = false;
+  this->dispensingRod = dispensingRod;
   done = false;
 }
 
@@ -133,6 +134,8 @@ void Motion::update() {
       break;
     case ARM_UP:
       moveArm(ARM_LEFT_TOP_BUMPER_PIN, ARM_RIGHT_TOP_BUMPER_PIN, 105);
+      if (dispensingRod && !done) armIntake.write(80);
+      else armIntake.write(90);
       break;
     case INTAKE_IN:
       driveIntake(110);

@@ -33,7 +33,7 @@ public:
   void trackToIntersection(int count);
   void trackToBump();
   void armDown();
-  void armUp();
+  void armUp(bool dispensingRod);
   void intakeIn();
   void intakeOut();
   void update();
@@ -69,6 +69,7 @@ private:
   Servo armLeft, armRight, armIntake;
   bool hitLeft, hitRight;
   long leftHitTime, rightHitTime, intakeStartTime;
+  bool dispensingRod;
 
   bool isStopped = false;
   bool done = true;

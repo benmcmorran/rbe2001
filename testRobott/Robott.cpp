@@ -14,7 +14,7 @@ void Robott::initialize(){
 		}
 	}while(!blue.isConnected());
 	motion.initialize();
-  motion.armUp(); initialWait();
+  motion.armUp(false); initialWait();
   motion.trackToBump(); initialWait();
   pinMode(22,OUTPUT);
 }
@@ -188,21 +188,18 @@ void Robott::updateNavi(int n){
 }
 
 void Robott::conditional_miniStopState(){
-	while(blue.stopMoving){
-		blue.checkstatus(); 
-		Serial.println("I AM NOT STUCK IN THIS LOOP");
-		if(isHB){
-			blue.sendHB();
-			setIsHB(false);
-		}
-	}
+  if (blue.stopMoving) {
+    motion.stop();
+  } else {
+    motion.resume();
+  }
 }
 
 
 void Robott::storeNewRod(){
   motion.armDown(); wait(true);
   motion.intakeOut(); wait(true);
-  motion.armUp(); wait(false);
+  motion.armUp(true); wait(false);
 }
 
 void Robott::storeSpentRod(){
@@ -216,7 +213,7 @@ void Robott::getNewRod(){
 void Robott::getSpentRod(){
 	motion.armDown(); wait(false);
   motion.intakeIn(); wait(true);
-  motion.armUp(); wait(true);
+  motion.armUp(false); wait(true);
 }
 
 
