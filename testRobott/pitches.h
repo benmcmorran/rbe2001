@@ -2,6 +2,8 @@
  * Public Constants
  *************************************************/
 
+// Code from http://www.instructables.com/id/Aruino-Tone-RTTL-Player
+
 #define NOTE_B0  31
 #define NOTE_C1  33
 #define NOTE_CS1 35
