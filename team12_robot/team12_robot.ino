@@ -1,7 +1,12 @@
 #include <TimerThree.h>
 #include <TimerOne.h>
 #include "Robott.h"
-#include "tone.h"
+#include "song_tone.h"
+#include <BluetoothMaster.h>
+#include <ReactorProtocol.h>
+#include <Servo.h>
+#include <Encoder.h>
+#include <PID_v1.h>
 
 Robott R(12);
 
